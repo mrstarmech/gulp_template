@@ -14,7 +14,7 @@ let path = {
         css: src_folder + "/scss/meta_style.scss",
         js: src_folder + "/js/meta_script.js",
         img: src_folder + "/img/**/*.{jpg,png,svg,webp,gif,ico}",
-        fonts: src_folder + "/fonts/*.{woff,woff2}"
+        fonts: src_folder + "/fonts/*"
     },
     watch: {
         html: src_folder + "/**/*.html",
@@ -39,7 +39,9 @@ let {src,dest} = require('gulp'),
     imagemin = require('gulp-imagemin'),
     webp = require('gulp-webp'),
     webphtml = require('gulp-webp-html'),
-    webpcss = require('gulp-webp-css')
+    webpcss = require('gulp-webp-css'),
+    ttf2woff = require('gulp-ttf2woff'),
+    ttf2woff2 = require('gulp-ttf2woff2');
 
 function browserSync() {
     browsersync.init({
@@ -113,6 +115,16 @@ function images() {
         .pipe(browsersync.stream());
 }
 
+function fonts() {
+    src(path.src.fonts)
+        .pipe(ttf2woff())
+        .pipe(dest(path.build.fonts));
+
+    return src(path.src.fonts)
+        .pipe(ttf2woff2())
+        .pipe(dest(path.build.fonts));
+}
+
 function watchFiles() {
     gulp.watch([path.watch.html], html);
     gulp.watch([path.watch.css], css);
@@ -124,9 +136,10 @@ function clean() {
     return del(path.clean);
 }
 
-let build = gulp.series(clean, gulp.parallel(images, js, css, html));
+let build = gulp.series(clean, gulp.parallel(images, js, css, html, fonts));
 let watch = gulp.parallel(build, watchFiles, browserSync);
 
+exports.fonts = fonts;
 exports.images = images;
 exports.js = js;
 exports.css = css;
