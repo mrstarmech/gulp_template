@@ -11,7 +11,7 @@
 }
 :focus,:active{outline: none;}
 a:focus,a:active{outline: none;}
-
+a{color:unset;cursor:unset;}
 nav,footer,header,aside{display: block;}
 
 html,body{
