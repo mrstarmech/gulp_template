@@ -14,7 +14,9 @@ let path = {
         css: src_folder + "/scss/meta_style.scss",
         js: src_folder + "/js/meta_script.js",
         img: src_folder + "/img/**/*.{jpg,png,svg,webp,gif,ico}",
-        fonts: src_folder + "/fonts/*"
+        ico: src_folder + "/img/**/*.json",
+        fonts: src_folder + "/fonts/*",
+        conf: src_folder + "/img/**/*.xml",
     },
     watch: {
         html: src_folder + "/**/*.html",
@@ -58,6 +60,15 @@ function html() {
         .pipe(fileinclude())
         .pipe(webphtml())
         .pipe(dest(path.build.html))
+        .pipe(browsersync.stream());
+}
+
+function scopy() {
+    src(path.src.conf)
+        .pipe(dest(path.build.html));
+
+    return src(path.src.ico)
+        .pipe(dest(path.build.img))
         .pipe(browsersync.stream());
 }
 
@@ -136,11 +147,12 @@ function clean() {
     return del(path.clean);
 }
 
-let build = gulp.series(clean, gulp.parallel(images, js, css, html, fonts));
+let build = gulp.series(clean, gulp.parallel(images, scopy, js, css, html, fonts));
 let watch = gulp.parallel(build, watchFiles, browserSync);
 
 exports.fonts = fonts;
 exports.images = images;
+exports.scopy = scopy;
 exports.js = js;
 exports.css = css;
 exports.html = html;
