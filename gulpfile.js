@@ -7,22 +7,24 @@ let path = {
         css: deploy_folder + "/css/",
         js: deploy_folder + "/js/",
         img: deploy_folder + "/img/",
-        fonts: deploy_folder + "/fonts/"
+        fonts: deploy_folder + "/fonts/",
+        ico: deploy_folder + "/ico/",
     },
     src: {
         html: src_folder + "/index.html",
         css: src_folder + "/scss/meta_style.scss",
         js: src_folder + "/js/meta_script.js",
         img: src_folder + "/img/**/*.{jpg,png,svg,webp,gif,ico}",
-        ico: src_folder + "/img/**/*.json",
+        ico: src_folder + "/ico/*.*",
         fonts: src_folder + "/fonts/*",
-        conf: src_folder + "/img/**/*.xml",
+        conf: src_folder + "/*.xml",
     },
     watch: {
         html: src_folder + "/**/*.html",
         css: src_folder + "/scss/**/*.scss",
         js: src_folder + "/js/**/*.js",
-        img: src_folder + "/img/**/*.{jpg,png,svg,webp,gif,ico}"
+        img: src_folder + "/img/**/*.{jpg,png,svg,webp,gif,ico}",
+        fonts: src_folder + "/fonts/*.ttf"
     },
     clean: "./" + deploy_folder + "/"
 }
@@ -68,7 +70,7 @@ function scopy() {
         .pipe(dest(path.build.html));
 
     return src(path.src.ico)
-        .pipe(dest(path.build.img))
+        .pipe(dest(path.build.ico))
         .pipe(browsersync.stream());
 }
 
@@ -107,13 +109,13 @@ function js() {
 function images() {
     return src(path.src.img)
         .pipe(webp({
-            quality: 70
+            quality: 100
         }))
         .pipe(dest(path.build.img))
         .pipe(src(path.src.img))
         .pipe(imagemin([
             imagemin.gifsicle({interlaced: true}),
-            imagemin.mozjpeg({quality: 75, progressive: true}),
+            imagemin.mozjpeg({quality: 100, progressive: true}),
             imagemin.optipng({optimizationLevel: 5}),
             imagemin.svgo({
                 plugins: [
@@ -141,6 +143,7 @@ function watchFiles() {
     gulp.watch([path.watch.css], css);
     gulp.watch([path.watch.js], js);
     gulp.watch([path.watch.img], images);
+    gulp.watch([path.watch.fonts], fonts);
 }
 
 function clean() {
