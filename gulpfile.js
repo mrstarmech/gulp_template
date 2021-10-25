@@ -11,7 +11,7 @@ let path = {
         ico: deploy_folder + "/ico/",
     },
     src: {
-        html: src_folder + "/index.html",
+        html: src_folder + "/*.html",
         css: src_folder + "/scss/meta_style.scss",
         js: src_folder + "/js/meta_script.js",
         img: src_folder + "/img/**/*.{jpg,png,svg,webp,gif,ico}",
