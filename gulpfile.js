@@ -10,7 +10,7 @@ let path = {
         js: deploy_folder + "/js/",
         img: deploy_folder + "/img/",
         fonts: deploy_folder + "/fonts/",
-        ico: deploy_folder + "/ico/",
+        ico: deploy_folder + "/",
     },
     src: {
         html: src_folder + "/index.html",
