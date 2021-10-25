@@ -1,5 +1,7 @@
-let deploy_folder = "dist";
-let src_folder = "src";
+const deploy_folder = "dist";
+const src_folder = "src";
+const favicon_master = "src/favicon_master.png";
+const FAVICON_DATA_FILE = "src/faviconData.json";
 
 let path = {
     build: {
@@ -11,13 +13,12 @@ let path = {
         ico: deploy_folder + "/ico/",
     },
     src: {
-        html: src_folder + "/*.html",
+        html: src_folder + "/index.html",
         css: src_folder + "/scss/meta_style.scss",
         js: src_folder + "/js/meta_script.js",
         img: src_folder + "/img/**/*.{jpg,png,svg,webp,gif,ico}",
         ico: src_folder + "/ico/*.*",
-        fonts: src_folder + "/fonts/*",
-        conf: src_folder + "/*.xml",
+        fonts: src_folder + "/fonts/*"
     },
     watch: {
         html: src_folder + "/**/*.html",
@@ -45,6 +46,9 @@ let {src,dest} = require('gulp'),
     webphtml = require('gulp-webp-html'),
     webpcss = require('gulp-webp-css'),
     ttf2woff = require('gulp-ttf2woff'),
+    realfavicon = require('gulp-real-favicon'),
+    fs = require('fs'),
+    { exec } = require('child_process'),
     ttf2woff2 = require('gulp-ttf2woff2');
 
 function browserSync() {
@@ -61,16 +65,8 @@ function html() {
     return src(path.src.html)
         .pipe(fileinclude())
         .pipe(webphtml())
+        .pipe(realfavicon.injectFaviconMarkups(JSON.parse(fs.readFileSync(FAVICON_DATA_FILE)).favicon.html_code))
         .pipe(dest(path.build.html))
-        .pipe(browsersync.stream());
-}
-
-function scopy() {
-    src(path.src.conf)
-        .pipe(dest(path.build.html));
-
-    return src(path.src.ico)
-        .pipe(dest(path.build.ico))
         .pipe(browsersync.stream());
 }
 
@@ -138,6 +134,84 @@ function fonts() {
         .pipe(dest(path.build.fonts));
 }
 
+function generatefav_impl(cb) {
+    realfavicon.generateFavicon({
+        masterPicture: favicon_master,
+        dest: path.build.ico,
+        iconsPath: 'ico/',
+        design: {
+            ios: {
+                pictureAspect: 'noChange',
+                assets: {
+                    ios6AndPriorIcons: false,
+                    ios7AndLaterIcons: false,
+                    precomposedIcons: false,
+                    declareOnlyDefaultIcon: true
+                }
+            },
+            desktopBrowser: {
+                design: 'raw'
+            },
+            windows: {
+                pictureAspect: 'noChange',
+                backgroundColor: '#da532c',
+                onConflict: 'override',
+                assets: {
+                    windows80Ie10Tile: false,
+                    windows10Ie11EdgeTiles: {
+                        small: false,
+                        medium: true,
+                        big: false,
+                        rectangle: false
+                    }
+                }
+            },
+            androidChrome: {
+                pictureAspect: 'noChange',
+                themeColor: '#ffffff',
+                manifest: {
+                    display: 'standalone',
+                    orientation: 'notSet',
+                    onConflict: 'override',
+                    declared: true
+                },
+                assets: {
+                    legacyIcon: false,
+                    lowResolutionIcons: false
+                }
+            },
+            safariPinnedTab: {
+                pictureAspect: 'blackAndWhite',
+                threshold: 50,
+                themeColor: '#5bbad5'
+            }
+        },
+        settings: {
+            scalingAlgorithm: 'Mitchell',
+            errorOnImageTooSmall: false,
+            readmeFile: false,
+            htmlCodeFile: false,
+            usePathAsIs: false
+        },
+        markupFile: FAVICON_DATA_FILE
+    }, cb);
+}
+
+function favicon(cb) {
+    if(fs.existsSync(FAVICON_DATA_FILE)) {
+        let currentVersion = JSON.parse(fs.readFileSync(FAVICON_DATA_FILE)).version;
+        realfavicon.checkForUpdates(currentVersion,(err)=>{
+            if(err) {
+                throw err;
+            } else {
+                generatefav_impl(cb);
+            }
+        });
+    } else {
+        generatefav_impl(cb);
+    }
+}
+
 function watchFiles() {
     gulp.watch([path.watch.html], html);
     gulp.watch([path.watch.css], css);
@@ -150,15 +224,15 @@ function clean() {
     return del(path.clean);
 }
 
-let build = gulp.series(clean, gulp.parallel(images, scopy, js, css, html, fonts));
-let watch = gulp.parallel(build, watchFiles, browserSync);
+let build = gulp.series(clean, favicon, gulp.parallel(images, js, css, html, fonts));
+let watch = gulp.series(build, gulp.parallel(watchFiles, browserSync));
 
 exports.fonts = fonts;
 exports.images = images;
-exports.scopy = scopy;
 exports.js = js;
 exports.css = css;
 exports.html = html;
 exports.build = build;
 exports.watch = watch;
+exports.favicon = favicon;
 exports.default = watch;
