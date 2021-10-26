@@ -138,7 +138,7 @@ function generatefav_impl(cb) {
     realfavicon.generateFavicon({
         masterPicture: favicon_master,
         dest: path.build.ico,
-        iconsPath: 'ico/',
+        iconsPath: './',
         design: {
             ios: {
                 pictureAspect: 'noChange',
