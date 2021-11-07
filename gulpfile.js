@@ -2,6 +2,7 @@ const deploy_folder = "dist";
 const src_folder = "src";
 const favicon_master = "src/favicon_master.png";
 const FAVICON_DATA_FILE = "src/faviconData.json";
+const image_quality = 100; //for webp/jpg
 
 let path = {
     build: {
@@ -13,7 +14,7 @@ let path = {
         ico: deploy_folder + "/",
     },
     src: {
-        html: src_folder + "/index.html",
+        html: src_folder + "/*.html",
         css: src_folder + "/scss/meta_style.scss",
         js: src_folder + "/js/meta_script.js",
         img: src_folder + "/img/**/*.{jpg,png,svg,webp,gif,ico}",
@@ -21,7 +22,7 @@ let path = {
         fonts: src_folder + "/fonts/*"
     },
     watch: {
-        html: src_folder + "/**/*.html",
+        html: src_folder + "/**/*.{html,htm}",
         css: src_folder + "/scss/**/*.scss",
         js: src_folder + "/js/**/*.js",
         img: src_folder + "/img/**/*.{jpg,png,svg,webp,gif,ico}",
@@ -48,7 +49,6 @@ let {src,dest} = require('gulp'),
     ttf2woff = require('gulp-ttf2woff'),
     realfavicon = require('gulp-real-favicon'),
     fs = require('fs'),
-    { exec } = require('child_process'),
     ttf2woff2 = require('gulp-ttf2woff2');
 
 function browserSync() {
@@ -66,6 +66,10 @@ function html() {
         .pipe(fileinclude())
         .pipe(webphtml())
         .pipe(realfavicon.injectFaviconMarkups(JSON.parse(fs.readFileSync(FAVICON_DATA_FILE)).favicon.html_code))
+        .pipe(dest(path.build.html))
+        .pipe(rename({
+            extname:'.php'
+        }))
         .pipe(dest(path.build.html))
         .pipe(browsersync.stream());
 }
@@ -105,13 +109,13 @@ function js() {
 function images() {
     return src(path.src.img)
         .pipe(webp({
-            quality: 100
+            quality: image_quality
         }))
         .pipe(dest(path.build.img))
         .pipe(src(path.src.img))
         .pipe(imagemin([
             imagemin.gifsicle({interlaced: true}),
-            imagemin.mozjpeg({quality: 100, progressive: true}),
+            imagemin.mozjpeg({quality: image_quality, progressive: true}),
             imagemin.optipng({optimizationLevel: 5}),
             imagemin.svgo({
                 plugins: [
