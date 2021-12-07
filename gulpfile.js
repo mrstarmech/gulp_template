@@ -19,7 +19,9 @@ let path = {
         js: src_folder + "/js/meta_script.js",
         img: src_folder + "/img/**/*.{jpg,png,svg,webp,gif,ico}",
         ico: src_folder + "/ico/*.*",
-        fonts: src_folder + "/fonts/*"
+        fonts: src_folder + "/fonts/*",
+        libjs: src_folder + "/libs/js/*.js",
+        libcss: src_folder + "/libs/css/*.css"
     },
     watch: {
         html: src_folder + "/**/*.{html,htm}",
@@ -75,6 +77,9 @@ function html() {
 }
 
 function css() {
+    src(path.src.libcss)
+        .pipe(dest(path.build.css))
+
     return src(path.src.css)
         .pipe(scss({
             outputStyle: "expanded"
@@ -95,6 +100,9 @@ function css() {
 }
 
 function js() {
+    src(path.src.libjs)
+        .pipe(dest(path.build.js))
+
     return src(path.src.js)
         .pipe(fileinclude())
         .pipe(dest(path.build.js))
